@@ -1,11 +1,17 @@
+import { Navigate, Route, Routes } from 'react-router'
+import ProtectedLayout from './components/ProtectedLayout'
+import LoginPage from './pages/LoginPage'
+import ProjectsPage from './pages/ProjectsPage'
+
 function App() {
   return (
-    <main className="min-h-screen bg-slate-50 p-8 text-slate-900">
-      <h1 className="text-3xl font-bold">Task Manager</h1>
-      <p className="mt-2 text-slate-600">
-        API: {import.meta.env.VITE_API_URL ?? 'VITE_API_URL is not set'}
-      </p>
-    </main>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedLayout />}>
+        <Route path="/projects" element={<ProjectsPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/projects" replace />} />
+    </Routes>
   )
 }
 
