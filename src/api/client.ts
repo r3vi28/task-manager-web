@@ -16,6 +16,10 @@ export class ApiError extends Error {
   }
 }
 
+export function getErrorMessage(error: unknown) {
+  return error instanceof ApiError ? error.message : 'Something went wrong. Please try again.'
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown

@@ -3,13 +3,13 @@ import { Navigate, useNavigate } from 'react-router'
 import { login, wakeUpServer } from '../api/auth'
 import { ApiError, type FieldErrors } from '../api/client'
 import { getSession, setToken } from '../auth/session'
-import { useIsSlow } from '../hooks/useIsSlow'
+import ErrorAlert from '../components/ErrorAlert'
+import FieldError from '../components/FieldError'
+import WakingUpNotice from '../components/WakingUpNotice'
+import { inputClass, primaryButtonClass, secondaryButtonClass } from '../styles'
 
 const DEMO_EMAIL = 'member@demo.com'
 const DEMO_PASSWORD = 'Demo1234!'
-
-const inputClass =
-  'mt-1 w-full rounded border border-slate-300 px-3 py-2 focus:border-indigo-500 focus:outline-none'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -18,7 +18,6 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const isSlow = useIsSlow(isSubmitting)
 
   useEffect(() => {
     wakeUpServer()
@@ -71,7 +70,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className={inputClass}
             />
-            {fieldErrors.email && <span className="mt-1 block text-red-600">{fieldErrors.email[0]}</span>}
+            <FieldError messages={fieldErrors.email} />
           </label>
 
           <label className="block text-sm font-medium">
@@ -84,36 +83,20 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={inputClass}
             />
-            {fieldErrors.password && (
-              <span className="mt-1 block text-red-600">{fieldErrors.password[0]}</span>
-            )}
+            <FieldError messages={fieldErrors.password} />
           </label>
 
-          {error && (
-            <p role="alert" className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
-            </p>
-          )}
+          <ErrorAlert message={error} />
+          <WakingUpNotice active={isSubmitting} />
 
-          {isSlow && (
-            <p role="status" className="rounded bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              Waking up the server… It runs on a free plan and sleeps when idle, so the first
-              request can take up to a minute.
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded bg-indigo-600 px-3 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className={`w-full ${primaryButtonClass}`}>
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
           <button
             type="button"
             onClick={fillDemoAccount}
             disabled={isSubmitting}
-            className="w-full rounded border border-slate-300 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            className={`w-full ${secondaryButtonClass}`}
           >
             Use demo account
           </button>
