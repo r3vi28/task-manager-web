@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { getErrorMessage } from '../api/client'
 import { getProjects } from '../api/projects'
 import CreateProjectForm from '../components/CreateProjectForm'
@@ -91,7 +92,10 @@ function ProjectCard({ project }: { project: ProjectWithTasks }) {
   const done = project.tasks.filter((task) => task.status === 'DONE').length
 
   return (
-    <article className="h-full rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <Link
+      to={`/projects/${project.id}`}
+      className="block h-full rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-indigo-300 hover:shadow"
+    >
       <h2 className="font-semibold">{project.name}</h2>
       <p className="mt-1 text-sm text-slate-600">
         {project.description ?? <span className="italic">No description</span>}
@@ -99,6 +103,6 @@ function ProjectCard({ project }: { project: ProjectWithTasks }) {
       <p className="mt-3 text-sm text-slate-500">
         {total === 0 ? 'No tasks yet' : `${done} of ${total} tasks done`}
       </p>
-    </article>
+    </Link>
   )
 }

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router'
 import ProtectedLayout from './components/ProtectedLayout'
 import LoginPage from './pages/LoginPage'
+import ProjectDetailPage from './pages/ProjectDetailPage'
 import ProjectsPage from './pages/ProjectsPage'
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedLayout />}>
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/projects" replace />} />
     </Routes>
