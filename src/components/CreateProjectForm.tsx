@@ -1,13 +1,20 @@
 import { useState, type SubmitEvent } from 'react'
 import { ApiError, getErrorMessage, type FieldErrors } from '../api/client'
 import { createProject } from '../api/projects'
-import { inputClass, primaryButtonClass } from '../styles'
+import { inputClass, primaryButtonClass, secondaryButtonClass } from '../styles'
 import type { Project } from '../types'
 import ErrorAlert from './ErrorAlert'
 import FieldError from './FieldError'
 import WakingUpNotice from './WakingUpNotice'
 
-export default function CreateProjectForm({ onCreated }: { onCreated: (project: Project) => void }) {
+interface CreateProjectFormProps {
+  onCreated: (project: Project) => void
+  onCancel: () => void
+}
+
+// Rendered inside a modal: the parent closes it in onCreated.
+// On failure nothing is closed and the error stays visible.
+export default function CreateProjectForm({ onCreated, onCancel }: CreateProjectFormProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -27,8 +34,6 @@ export default function CreateProjectForm({ onCreated }: { onCreated: (project: 
         description: description.trim() || undefined,
       })
       onCreated(project)
-      setName('')
-      setDescription('')
     } catch (err) {
       setError(getErrorMessage(err))
       if (err instanceof ApiError) setFieldErrors(err.fieldErrors)
@@ -38,12 +43,7 @@ export default function CreateProjectForm({ onCreated }: { onCreated: (project: 
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-    >
-      <h2 className="font-semibold">New project</h2>
-
+    <form onSubmit={handleSubmit} className="space-y-4">
       <label className="block text-sm font-medium">
         Name
         <input
@@ -69,9 +69,14 @@ export default function CreateProjectForm({ onCreated }: { onCreated: (project: 
       <ErrorAlert message={error} />
       <WakingUpNotice active={isSubmitting} />
 
-      <button type="submit" disabled={isSubmitting} className={primaryButtonClass}>
-        {isSubmitting ? 'Creating…' : 'Create project'}
-      </button>
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className={secondaryButtonClass}>
+          Cancel
+        </button>
+        <button type="submit" disabled={isSubmitting} className={primaryButtonClass}>
+          {isSubmitting ? 'Creating…' : 'Create project'}
+        </button>
+      </div>
     </form>
   )
 }

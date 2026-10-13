@@ -55,7 +55,7 @@ Other scripts: `pnpm build`, `pnpm preview`, `pnpm lint`.
 src/
   api/          fetch wrapper (client.ts) and one module per resource
   auth/         token storage and client-side JWT decoding
-  components/   forms, task card, layout and small UI pieces
+  components/   forms, modal, task card, layout and small UI pieces
   hooks/        useIsSlow (delayed "waking up the server" notice)
   pages/        Login, Projects, Project detail
   dates.ts      due date conversion (see below)
@@ -75,6 +75,8 @@ src/
 - `dueDate` must be a UTC ISO string. A due date is a calendar day, so it is sent at `12:00 UTC` and always displayed in UTC, which keeps the selected day from shifting in any timezone.
 
 **Local updates instead of refetching.** After creating, editing or deleting, the page applies the API response to its local state. Task filtering also happens on the client, because the project response already includes every task; this avoids extra round trips to a server that may be asleep.
+
+**Native `<dialog>` for modals** (`src/components/Modal.tsx`). `showModal()` already provides the backdrop, a focus trap, an inert page behind it and closing with Escape, so the component only adds closing on a backdrop click, focusing the first field and returning focus to the button that opened it. The parent mounts the modal to open it and unmounts it to close it, so forms always start fresh. A form closes its modal only after the request succeeds; on failure it stays open with the error.
 
 **Explicit loading states.** Pages keep a single state value (`loading | error | ready`) instead of separate flags, so impossible combinations can't happen.
 

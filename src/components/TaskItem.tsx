@@ -5,6 +5,7 @@ import { formatDueDate } from '../dates'
 import { PRIORITY_LABELS, STATUS_LABELS } from '../labels'
 import type { Task, TaskPriority, TaskStatus } from '../types'
 import ErrorAlert from './ErrorAlert'
+import Modal from './Modal'
 import TaskForm from './TaskForm'
 
 const STATUS_BADGE: Record<TaskStatus, string> = {
@@ -34,6 +35,7 @@ export default function TaskItem({ task, canDelete, onUpdated, onDeleted }: Task
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // If updateTask throws, the modal stays open and TaskForm shows the error.
   async function handleSave(fields: TaskFields) {
     onUpdated(await updateTask(task.id, fields))
     setIsEditing(false)
@@ -64,17 +66,6 @@ export default function TaskItem({ task, canDelete, onUpdated, onDeleted }: Task
       await deleteTask(task.id)
       onDeleted(task.id)
     })
-  }
-
-  if (isEditing) {
-    return (
-      <TaskForm
-        task={task}
-        submitLabel="Save changes"
-        onSubmit={handleSave}
-        onCancel={() => setIsEditing(false)}
-      />
-    )
   }
 
   return (
@@ -133,6 +124,17 @@ export default function TaskItem({ task, canDelete, onUpdated, onDeleted }: Task
         <div className="mt-3">
           <ErrorAlert message={error} />
         </div>
+      )}
+
+      {isEditing && (
+        <Modal title="Edit task" onClose={() => setIsEditing(false)}>
+          <TaskForm
+            task={task}
+            submitLabel="Save changes"
+            onSubmit={handleSave}
+            onCancel={() => setIsEditing(false)}
+          />
+        </Modal>
       )}
     </article>
   )

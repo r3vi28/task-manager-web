@@ -4,8 +4,9 @@ import { getErrorMessage } from '../api/client'
 import { getProjects } from '../api/projects'
 import CreateProjectForm from '../components/CreateProjectForm'
 import ErrorAlert from '../components/ErrorAlert'
+import Modal from '../components/Modal'
 import WakingUpNotice from '../components/WakingUpNotice'
-import { secondaryButtonClass } from '../styles'
+import { primaryButtonClass, secondaryButtonClass } from '../styles'
 import type { Project, ProjectWithTasks } from '../types'
 
 // One state value instead of separate loading/error/data flags,
@@ -18,6 +19,7 @@ type ProjectsState =
 export default function ProjectsPage() {
   const [state, setState] = useState<ProjectsState>({ status: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
+  const [isCreating, setIsCreating] = useState(false)
 
   useEffect(() => {
     // Ignore the response if the component unmounted or a newer request started.
@@ -46,13 +48,23 @@ export default function ProjectsPage() {
         ? { status: 'ready', projects: [{ ...project, tasks: [] }, ...current.projects] }
         : current,
     )
+    setIsCreating(false)
   }
 
   return (
     <section className="space-y-6">
-      <h1 className="text-2xl font-bold">Projects</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">Projects</h1>
+        <button type="button" onClick={() => setIsCreating(true)} className={primaryButtonClass}>
+          New project
+        </button>
+      </div>
 
-      <CreateProjectForm onCreated={handleCreated} />
+      {isCreating && (
+        <Modal title="New project" onClose={() => setIsCreating(false)}>
+          <CreateProjectForm onCreated={handleCreated} onCancel={() => setIsCreating(false)} />
+        </Modal>
+      )}
 
       {state.status === 'loading' && (
         <div className="space-y-3">
@@ -71,7 +83,7 @@ export default function ProjectsPage() {
       )}
 
       {state.status === 'ready' && state.projects.length === 0 && (
-        <p className="text-slate-600">No projects yet. Create your first one above.</p>
+        <p className="text-slate-600">No projects yet. Use “New project” to create your first one.</p>
       )}
 
       {state.status === 'ready' && state.projects.length > 0 && (

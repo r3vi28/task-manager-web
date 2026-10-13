@@ -4,11 +4,12 @@ import { getErrorMessage } from '../api/client'
 import { createTask, getProject, type TaskFields } from '../api/tasks'
 import { getSession } from '../auth/session'
 import ErrorAlert from '../components/ErrorAlert'
+import Modal from '../components/Modal'
 import TaskForm from '../components/TaskForm'
 import TaskItem from '../components/TaskItem'
 import WakingUpNotice from '../components/WakingUpNotice'
 import { isTaskStatus, STATUSES, STATUS_LABELS } from '../labels'
-import { secondaryButtonClass } from '../styles'
+import { primaryButtonClass, secondaryButtonClass } from '../styles'
 import type { ProjectWithTasks, Task, TaskStatus } from '../types'
 
 type ProjectState =
@@ -21,6 +22,7 @@ export default function ProjectDetailPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [state, setState] = useState<ProjectState>({ status: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
+  const [isCreating, setIsCreating] = useState(false)
 
   // The filter lives in the URL (?status=DONE) so it survives a reload.
   const statusParam = searchParams.get('status')
@@ -64,6 +66,7 @@ export default function ProjectDetailPage() {
   async function handleCreate(fields: TaskFields) {
     const task = await createTask(projectId, fields)
     updateTasks((tasks) => [task, ...tasks])
+    setIsCreating(false)
   }
 
   function handleUpdated(updated: Task) {
@@ -115,14 +118,24 @@ export default function ProjectDetailPage() {
     <section className="space-y-6">
       <div>
         {backLink}
-        <h1 className="mt-2 text-2xl font-bold">{project.name}</h1>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-2">
+          <h1 className="text-2xl font-bold">{project.name}</h1>
+          <button type="button" onClick={() => setIsCreating(true)} className={primaryButtonClass}>
+            New task
+          </button>
+        </div>
         {project.description && <p className="mt-1 text-slate-600">{project.description}</p>}
       </div>
 
-      <div>
-        <h2 className="mb-2 font-semibold">New task</h2>
-        <TaskForm submitLabel="Add task" onSubmit={handleCreate} />
-      </div>
+      {isCreating && (
+        <Modal title="New task" onClose={() => setIsCreating(false)}>
+          <TaskForm
+            submitLabel="Create task"
+            onSubmit={handleCreate}
+            onCancel={() => setIsCreating(false)}
+          />
+        </Modal>
+      )}
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -145,7 +158,7 @@ export default function ProjectDetailPage() {
 
         {visibleTasks.length === 0 ? (
           <p className="text-slate-600">
-            {project.tasks.length === 0 ? 'No tasks yet. Add the first one above.' : 'No tasks with this status.'}
+            {project.tasks.length === 0 ? 'No tasks yet. Use “New task” to add the first one.' : 'No tasks with this status.'}
           </p>
         ) : (
           <ul className="space-y-3">

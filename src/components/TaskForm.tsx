@@ -13,10 +13,11 @@ interface TaskFormProps {
   task?: Task // when present, the form edits this task
   submitLabel: string
   onSubmit: (fields: TaskFields) => Promise<void>
-  onCancel?: () => void
+  onCancel: () => void
 }
 
-// Shared by "create" and "edit". The parent decides which API call to make.
+// Shared by "create" and "edit". The parent decides which API call to make
+// and closes the modal on success; if onSubmit throws, the form shows the error.
 export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
@@ -41,13 +42,6 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
         priority,
         dueDate: toApiDate(dueDate),
       })
-      if (!task) {
-        setTitle('')
-        setDescription('')
-        setStatus('TODO')
-        setPriority('MEDIUM')
-        setDueDate('')
-      }
     } catch (err) {
       setError(getErrorMessage(err))
       if (err instanceof ApiError) setFieldErrors(err.fieldErrors)
@@ -57,10 +51,7 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       <label className="block text-sm font-medium">
         Title
         <input
@@ -83,7 +74,7 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
         <FieldError messages={fieldErrors.description} />
       </label>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-medium">
           Status
           <select
@@ -116,7 +107,7 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
           <FieldError messages={fieldErrors.priority} />
         </label>
 
-        <label className="block text-sm font-medium">
+        <label className="block text-sm font-medium sm:col-span-2">
           Due date <span className="font-normal text-slate-500">(optional)</span>
           <input
             type="date"
@@ -131,20 +122,13 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
       <ErrorAlert message={error} />
       <WakingUpNotice active={isSubmitting} />
 
-      <div className="flex gap-2">
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className={secondaryButtonClass}>
+          Cancel
+        </button>
         <button type="submit" disabled={isSubmitting} className={primaryButtonClass}>
           {isSubmitting ? 'Saving…' : submitLabel}
         </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className={secondaryButtonClass}
-          >
-            Cancel
-          </button>
-        )}
       </div>
     </form>
   )
