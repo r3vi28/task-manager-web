@@ -1,15 +1,18 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { getErrorMessage } from '../api/client'
 import { createTask, getProject, type TaskFields } from '../api/tasks'
 import { getSession } from '../auth/session'
+import EmptyState from '../components/EmptyState'
 import ErrorAlert from '../components/ErrorAlert'
+import { ArrowLeftIcon, ClipboardIcon, PlusIcon } from '../components/icons'
 import Modal from '../components/Modal'
+import SkeletonList from '../components/SkeletonList'
 import TaskForm from '../components/TaskForm'
 import TaskItem from '../components/TaskItem'
 import WakingUpNotice from '../components/WakingUpNotice'
 import { isTaskStatus, STATUSES, STATUS_LABELS } from '../labels'
-import { primaryButtonClass, secondaryButtonClass } from '../styles'
+import { focusRing, mutedTextClass, primaryButtonClass, secondaryButtonClass } from '../styles'
 import type { ProjectWithTasks, Task, TaskStatus } from '../types'
 
 type ProjectState =
@@ -78,17 +81,22 @@ export default function ProjectDetailPage() {
   }
 
   const backLink = (
-    <Link to="/projects" className="text-sm text-indigo-600 hover:underline">
-      ← All projects
+    <Link
+      to="/projects"
+      className={`-ml-1 inline-flex items-center gap-1.5 rounded px-1 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 ${focusRing}`}
+    >
+      <ArrowLeftIcon />
+      All projects
     </Link>
   )
 
   if (state.status === 'loading') {
     return (
-      <section className="space-y-3">
+      <section className="space-y-6">
         {backLink}
-        <p className="text-slate-600">Loading project…</p>
+        <div aria-hidden="true" className="h-8 w-1/2 animate-pulse rounded-lg bg-slate-200 motion-reduce:animate-none dark:bg-slate-800" />
         <WakingUpNotice active />
+        <SkeletonList count={3} label="Loading project…" className="space-y-3" />
       </section>
     )
   }
@@ -114,17 +122,26 @@ export default function ProjectDetailPage() {
     ? project.tasks.filter((task) => task.status === statusFilter)
     : project.tasks.toSorted((a, b) => Number(a.status === 'DONE') - Number(b.status === 'DONE'))
 
+  const newTaskButton = (
+    <button type="button" onClick={() => setIsCreating(true)} className={primaryButtonClass}>
+      <PlusIcon />
+      New task
+    </button>
+  )
+
   return (
     <section className="space-y-6">
       <div>
         {backLink}
-        <div className="mt-2 flex flex-wrap items-start justify-between gap-2">
-          <h1 className="text-2xl font-bold">{project.name}</h1>
-          <button type="button" onClick={() => setIsCreating(true)} className={primaryButtonClass}>
-            New task
-          </button>
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight break-words">{project.name}</h1>
+            {project.description && (
+              <p className={`mt-1 text-sm ${mutedTextClass}`}>{project.description}</p>
+            )}
+          </div>
+          {newTaskButton}
         </div>
-        {project.description && <p className="mt-1 text-slate-600">{project.description}</p>}
       </div>
 
       {isCreating && (
@@ -137,29 +154,51 @@ export default function ProjectDetailPage() {
         </Modal>
       )}
 
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-semibold">Tasks</h2>
-          <div className="flex flex-wrap gap-1" role="group" aria-label="Filter by status">
-            <FilterButton active={statusFilter === null} onClick={() => setFilter(null)}>
-              All ({project.tasks.length})
-            </FilterButton>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">Tasks</h2>
+          {/* Segmented control: aria-pressed tells screen readers which filter is on. */}
+          <div
+            role="group"
+            aria-label="Filter by status"
+            className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800/60"
+          >
+            <FilterButton
+              label="All"
+              count={project.tasks.length}
+              active={statusFilter === null}
+              onClick={() => setFilter(null)}
+            />
             {STATUSES.map((status) => (
               <FilterButton
                 key={status}
+                label={STATUS_LABELS[status]}
+                count={project.tasks.filter((t) => t.status === status).length}
                 active={statusFilter === status}
                 onClick={() => setFilter(status)}
-              >
-                {STATUS_LABELS[status]} ({project.tasks.filter((t) => t.status === status).length})
-              </FilterButton>
+              />
             ))}
           </div>
         </div>
 
-        {visibleTasks.length === 0 ? (
-          <p className="text-slate-600">
-            {project.tasks.length === 0 ? 'No tasks yet. Use “New task” to add the first one.' : 'No tasks with this status.'}
-          </p>
+        {project.tasks.length === 0 ? (
+          <EmptyState
+            icon={<ClipboardIcon className="size-6" />}
+            title="No tasks yet"
+            description="Break this project down into tasks and track them from to do to done."
+            action={newTaskButton}
+          />
+        ) : visibleTasks.length === 0 ? (
+          <EmptyState
+            icon={<ClipboardIcon className="size-6" />}
+            title="Nothing here"
+            description="No tasks match this filter."
+            action={
+              <button type="button" onClick={() => setFilter(null)} className={secondaryButtonClass}>
+                Show all tasks
+              </button>
+            }
+          />
         ) : (
           <ul className="space-y-3">
             {visibleTasks.map((task) => (
@@ -180,22 +219,25 @@ export default function ProjectDetailPage() {
 }
 
 interface FilterButtonProps {
+  label: string
+  count: number
   active: boolean
   onClick: () => void
-  children: ReactNode
 }
 
-function FilterButton({ active, onClick, children }: FilterButtonProps) {
+function FilterButton({ label, count, active, onClick }: FilterButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded px-3 py-1 text-sm font-medium ${
-        active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'
+      className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap transition-colors ${focusRing} ${
+        active
+          ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+          : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
       }`}
     >
-      {children}
+      {label} <span className="font-normal tabular-nums">{count}</span>
     </button>
   )
 }

@@ -1,12 +1,21 @@
 import { useEffect, useState, type SubmitEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { login, wakeUpServer } from '../api/auth'
-import { ApiError, type FieldErrors } from '../api/client'
+import { API_URL, ApiError, type FieldErrors } from '../api/client'
 import { getSession, setToken } from '../auth/session'
 import ErrorAlert from '../components/ErrorAlert'
 import FieldError from '../components/FieldError'
+import { LogoMark } from '../components/icons'
 import WakingUpNotice from '../components/WakingUpNotice'
-import { inputClass, primaryButtonClass, secondaryButtonClass } from '../styles'
+import {
+  cardClass,
+  focusRing,
+  inputClass,
+  labelClass,
+  mutedTextClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from '../styles'
 
 const DEMO_EMAIL = 'member@demo.com'
 const DEMO_PASSWORD = 'Demo1234!'
@@ -54,13 +63,16 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-slate-900">
-      <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold">Task Manager</h1>
-        <p className="mt-1 text-sm text-slate-600">Sign in to manage your projects.</p>
+    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center text-center">
+          <LogoMark className="size-11" />
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Sign in to Task Manager</h1>
+          <p className={`mt-1 text-sm ${mutedTextClass}`}>Manage your projects and tasks.</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
-          <label className="block text-sm font-medium">
+        <form onSubmit={handleSubmit} className={`${cardClass} mt-8 space-y-4 p-6`} noValidate>
+          <label className={labelClass}>
             Email
             <input
               type="email"
@@ -73,7 +85,7 @@ export default function LoginPage() {
             <FieldError messages={fieldErrors.email} />
           </label>
 
-          <label className="block text-sm font-medium">
+          <label className={labelClass}>
             Password
             <input
               type="password"
@@ -92,6 +104,13 @@ export default function LoginPage() {
           <button type="submit" disabled={isSubmitting} className={`w-full ${primaryButtonClass}`}>
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
+
+          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+            <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+            or
+            <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+          </div>
+
           <button
             type="button"
             onClick={fillDemoAccount}
@@ -101,6 +120,18 @@ export default function LoginPage() {
             Use demo account
           </button>
         </form>
+
+        <p className={`mt-6 text-center text-sm ${mutedTextClass}`}>
+          Web client for the{' '}
+          <a
+            href={`${API_URL}/api/docs`}
+            target="_blank"
+            rel="noreferrer"
+            className={`rounded font-medium text-indigo-600 hover:underline dark:text-indigo-400 ${focusRing}`}
+          >
+            Task Manager API
+          </a>
+        </p>
       </div>
     </main>
   )

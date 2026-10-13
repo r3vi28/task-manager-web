@@ -28,6 +28,7 @@ Deleting tasks is restricted to the `ADMIN` role, so the delete button is hidden
 - Filter tasks by status; the filter is stored in the URL (`?status=DONE`)
 - Delete tasks (admins only)
 - Field-level validation errors coming from the API
+- Light and dark themes (follows the OS setting), keyboard-friendly focus styles and a layout that works on phones
 
 ## Tech stack
 
@@ -55,11 +56,12 @@ Other scripts: `pnpm build`, `pnpm preview`, `pnpm lint`.
 src/
   api/          fetch wrapper (client.ts) and one module per resource
   auth/         token storage and client-side JWT decoding
-  components/   forms, modal, task card, layout and small UI pieces
+  components/   forms, modal, task card, layout, badges, skeletons and inline icons
   hooks/        useIsSlow (delayed "waking up the server" notice)
   pages/        Login, Projects, Project detail
   dates.ts      due date conversion (see below)
   labels.ts     display labels for statuses and priorities
+  styles.ts     shared Tailwind class strings (buttons, inputs, cards)
   types.ts      API response types
 ```
 

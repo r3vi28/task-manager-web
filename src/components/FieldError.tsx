@@ -2,5 +2,5 @@
 export default function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null
 
-  return <span className="mt-1 block text-sm font-normal text-red-600">{messages[0]}</span>
+  return <span className="mt-1 block text-sm font-normal text-red-600 dark:text-red-400">{messages[0]}</span>
 }

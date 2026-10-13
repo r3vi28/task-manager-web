@@ -3,10 +3,19 @@ import { Link } from 'react-router'
 import { getErrorMessage } from '../api/client'
 import { getProjects } from '../api/projects'
 import CreateProjectForm from '../components/CreateProjectForm'
+import EmptyState from '../components/EmptyState'
 import ErrorAlert from '../components/ErrorAlert'
+import { FolderIcon, PlusIcon } from '../components/icons'
 import Modal from '../components/Modal'
+import SkeletonList from '../components/SkeletonList'
 import WakingUpNotice from '../components/WakingUpNotice'
-import { primaryButtonClass, secondaryButtonClass } from '../styles'
+import {
+  cardClass,
+  focusRing,
+  mutedTextClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from '../styles'
 import type { Project, ProjectWithTasks } from '../types'
 
 // One state value instead of separate loading/error/data flags,
@@ -51,13 +60,21 @@ export default function ProjectsPage() {
     setIsCreating(false)
   }
 
+  const newProjectButton = (
+    <button type="button" onClick={() => setIsCreating(true)} className={primaryButtonClass}>
+      <PlusIcon />
+      New project
+    </button>
+  )
+
   return (
     <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Projects</h1>
-        <button type="button" onClick={() => setIsCreating(true)} className={primaryButtonClass}>
-          New project
-        </button>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
+          <p className={`mt-1 text-sm ${mutedTextClass}`}>Pick a project to see and manage its tasks.</p>
+        </div>
+        {newProjectButton}
       </div>
 
       {isCreating && (
@@ -67,9 +84,9 @@ export default function ProjectsPage() {
       )}
 
       {state.status === 'loading' && (
-        <div className="space-y-3">
-          <p className="text-slate-600">Loading projects…</p>
+        <div className="space-y-4">
           <WakingUpNotice active />
+          <SkeletonList count={4} label="Loading projects…" className="grid gap-4 sm:grid-cols-2" />
         </div>
       )}
 
@@ -83,7 +100,12 @@ export default function ProjectsPage() {
       )}
 
       {state.status === 'ready' && state.projects.length === 0 && (
-        <p className="text-slate-600">No projects yet. Use “New project” to create your first one.</p>
+        <EmptyState
+          icon={<FolderIcon className="size-6" />}
+          title="No projects yet"
+          description="Projects group related tasks. Create your first one to get started."
+          action={newProjectButton}
+        />
       )}
 
       {state.status === 'ready' && state.projects.length > 0 && (
@@ -102,19 +124,33 @@ export default function ProjectsPage() {
 function ProjectCard({ project }: { project: ProjectWithTasks }) {
   const total = project.tasks.length
   const done = project.tasks.filter((task) => task.status === 'DONE').length
+  const percentDone = total === 0 ? 0 : Math.round((done / total) * 100)
 
   return (
     <Link
       to={`/projects/${project.id}`}
-      className="block h-full rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-indigo-300 hover:shadow"
+      className={`group flex h-full flex-col ${cardClass} p-5 transition hover:border-indigo-300 hover:shadow-md dark:hover:border-indigo-500/50 ${focusRing}`}
     >
-      <h2 className="font-semibold">{project.name}</h2>
-      <p className="mt-1 text-sm text-slate-600">
+      <h2 className="font-semibold tracking-tight group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+        {project.name}
+      </h2>
+      <p className={`mt-1 line-clamp-2 text-sm ${mutedTextClass}`}>
         {project.description ?? <span className="italic">No description</span>}
       </p>
-      <p className="mt-3 text-sm text-slate-500">
-        {total === 0 ? 'No tasks yet' : `${done} of ${total} tasks done`}
-      </p>
+
+      {/* mt-auto pins the progress to the bottom so cards in a row line up. */}
+      <div className="mt-auto pt-4">
+        <p className={`text-xs ${mutedTextClass}`}>
+          {total === 0 ? 'No tasks yet' : `${done} of ${total} tasks done`}
+        </p>
+        {/* Decorative: the text above already says the same thing. */}
+        <div aria-hidden="true" className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+          <div
+            className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400"
+            style={{ width: `${percentDone}%` }}
+          />
+        </div>
+      </div>
     </Link>
   )
 }

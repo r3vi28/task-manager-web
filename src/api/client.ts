@@ -1,6 +1,6 @@
 import { clearToken, getToken } from '../auth/session'
 
-const API_URL = import.meta.env.VITE_API_URL.replace(/\/+$/, '')
+export const API_URL = import.meta.env.VITE_API_URL.replace(/\/+$/, '')
 
 export type FieldErrors = Record<string, string[]>
 

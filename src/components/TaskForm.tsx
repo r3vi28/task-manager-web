@@ -3,7 +3,13 @@ import { ApiError, getErrorMessage, type FieldErrors } from '../api/client'
 import type { TaskFields } from '../api/tasks'
 import { toApiDate, toDateInputValue } from '../dates'
 import { PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS } from '../labels'
-import { inputClass, primaryButtonClass, secondaryButtonClass } from '../styles'
+import {
+  inputClass,
+  labelClass,
+  optionalHintClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from '../styles'
 import type { Task, TaskPriority, TaskStatus } from '../types'
 import ErrorAlert from './ErrorAlert'
 import FieldError from './FieldError'
@@ -52,7 +58,7 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <label className="block text-sm font-medium">
+      <label className={labelClass}>
         Title
         <input
           required
@@ -63,8 +69,8 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
         <FieldError messages={fieldErrors.title} />
       </label>
 
-      <label className="block text-sm font-medium">
-        Description <span className="font-normal text-slate-500">(optional)</span>
+      <label className={labelClass}>
+        Description <span className={optionalHintClass}>(optional)</span>
         <textarea
           rows={2}
           value={description}
@@ -75,7 +81,7 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
       </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm font-medium">
+        <label className={labelClass}>
           Status
           <select
             value={status}
@@ -91,7 +97,7 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
           <FieldError messages={fieldErrors.status} />
         </label>
 
-        <label className="block text-sm font-medium">
+        <label className={labelClass}>
           Priority
           <select
             value={priority}
@@ -107,8 +113,8 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
           <FieldError messages={fieldErrors.priority} />
         </label>
 
-        <label className="block text-sm font-medium sm:col-span-2">
-          Due date <span className="font-normal text-slate-500">(optional)</span>
+        <label className={`${labelClass} sm:col-span-2`}>
+          Due date <span className={optionalHintClass}>(optional)</span>
           <input
             type="date"
             value={dueDate}
@@ -122,7 +128,7 @@ export default function TaskForm({ task, submitLabel, onSubmit, onCancel }: Task
       <ErrorAlert message={error} />
       <WakingUpNotice active={isSubmitting} />
 
-      <div className="flex justify-end gap-2">
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <button type="button" onClick={onCancel} className={secondaryButtonClass}>
           Cancel
         </button>

@@ -1,7 +1,13 @@
 import { useState, type SubmitEvent } from 'react'
 import { ApiError, getErrorMessage, type FieldErrors } from '../api/client'
 import { createProject } from '../api/projects'
-import { inputClass, primaryButtonClass, secondaryButtonClass } from '../styles'
+import {
+  inputClass,
+  labelClass,
+  optionalHintClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from '../styles'
 import type { Project } from '../types'
 import ErrorAlert from './ErrorAlert'
 import FieldError from './FieldError'
@@ -44,7 +50,7 @@ export default function CreateProjectForm({ onCreated, onCancel }: CreateProject
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <label className="block text-sm font-medium">
+      <label className={labelClass}>
         Name
         <input
           required
@@ -55,8 +61,8 @@ export default function CreateProjectForm({ onCreated, onCancel }: CreateProject
         <FieldError messages={fieldErrors.name} />
       </label>
 
-      <label className="block text-sm font-medium">
-        Description <span className="font-normal text-slate-500">(optional)</span>
+      <label className={labelClass}>
+        Description <span className={optionalHintClass}>(optional)</span>
         <textarea
           rows={2}
           value={description}
@@ -69,7 +75,7 @@ export default function CreateProjectForm({ onCreated, onCancel }: CreateProject
       <ErrorAlert message={error} />
       <WakingUpNotice active={isSubmitting} />
 
-      <div className="flex justify-end gap-2">
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <button type="button" onClick={onCancel} className={secondaryButtonClass}>
           Cancel
         </button>

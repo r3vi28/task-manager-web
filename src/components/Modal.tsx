@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { focusRing } from '../styles'
+import { ghostButtonClass } from '../styles'
+import { XIcon } from './icons'
 
 interface ModalProps {
   title: string
@@ -42,20 +43,20 @@ export default function Modal({ title, onClose, children }: ModalProps) {
       // Fires when the browser closes the dialog itself (Escape).
       onClose={onClose}
       onMouseDown={handleMouseDown}
-      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg bg-white p-0 text-slate-900 shadow-xl backdrop:bg-slate-900/50"
+      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
-      <div className="max-h-[85dvh] overflow-y-auto p-6">
+      <div className="max-h-[85dvh] overflow-y-auto p-5 sm:p-6">
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-lg font-semibold">
+          <h2 id={titleId} className="text-lg font-semibold tracking-tight">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className={`rounded px-2 text-xl leading-8 text-slate-500 hover:bg-slate-100 hover:text-slate-700 ${focusRing}`}
+            className={`${ghostButtonClass} -mr-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200`}
           >
-            ×
+            <XIcon className="size-5" />
           </button>
         </div>
         {children}
